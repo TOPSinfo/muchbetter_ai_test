@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
@@ -10,8 +10,6 @@ function App() {
   const [isListening, setIsListening] = useState(false);
 
   const microphoneRef = useRef(null);
-
-  useEffect(() => {}, []);
 
   if (!browserSupportsSpeechRecognition) {
     return (

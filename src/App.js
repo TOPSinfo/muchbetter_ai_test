@@ -1,34 +1,48 @@
-import { useRef, useState } from "react";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
+import { useRef, useState, useEffect } from "react";
 import "./App.css";
+import { scripts } from "./scripts";
 
 function App() {
-  const { browserSupportsSpeechRecognition } = useSpeechRecognition();
-
   const [isListening, setIsListening] = useState(false);
 
   const microphoneRef = useRef(null);
 
-  if (!browserSupportsSpeechRecognition) {
-    return (
-      <div className="mircophone-container">
-        Browser is not Support Speech Recognition.
-      </div>
-    );
-  }
+  useEffect(() => {
+    scripts.forEach(function (url) {
+      let script = document.createElement("script");
+      script.src = url;
+      script.async = false;
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    });
+  }, []);
+
+  const loadVadDetector = async () => {
+    // eslint-disable-next-line no-undef
+    const myvad = await vad.MicVAD.new({
+      onSpeechStart: () => {
+        console.log("Started Speaking");
+        setIsListening(true);
+        microphoneRef.current.classList.add("listening");
+      },
+      onSpeechEnd: (audio) => {
+        console.log("Stoped Speaking");
+        setIsListening(false);
+        microphoneRef.current.classList.remove("listening");
+      },
+    });
+    myvad.start();
+  };
+
   const handleListing = () => {
     setIsListening(true);
-    microphoneRef.current.classList.add("listening");
-    SpeechRecognition.startListening({
-      continuous: true,
-    });
+    loadVadDetector();
   };
+
   const stopHandle = () => {
     setIsListening(false);
-    microphoneRef.current.classList.remove("listening");
-    SpeechRecognition.stopListening();
   };
 
   return (
@@ -53,13 +67,16 @@ function App() {
             />
           </svg>
         </div>
-        {isListening && console.log("speaking")}
         <div className="microphone-status">
-          {isListening ? "Speaking........." : "Click to start Speaking"}
+          {isListening ? "Listening........." : "Not Listening...."}
         </div>
-        {isListening && (
+        {isListening ? (
           <button className="microphone-stop btn" onClick={stopHandle}>
-            Stop
+            Stop Listening
+          </button>
+        ) : (
+          <button className="microphone-stop btn" onClick={handleListing}>
+            Start Listening
           </button>
         )}
       </div>

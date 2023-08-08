@@ -4,10 +4,12 @@ import { scripts } from "./scripts";
 
 function App() {
   const [isListening, setIsListening] = useState(false);
+  const [isSpeking, setIsSpeaking] = useState(false);
 
   const microphoneRef = useRef(null);
 
   useEffect(() => {
+    // Loading the VAD scripts
     scripts.forEach(function (url) {
       let script = document.createElement("script");
       script.src = url;
@@ -24,19 +26,21 @@ function App() {
     const myvad = await vad.MicVAD.new({
       onSpeechStart: () => {
         console.log("Started Speaking");
+        setIsSpeaking(true);
         setIsListening(true);
         microphoneRef.current.classList.add("listening");
       },
       onSpeechEnd: (audio) => {
         console.log("Stoped Speaking");
         setIsListening(false);
+        setIsSpeaking(false);
         microphoneRef.current.classList.remove("listening");
       },
     });
     myvad.start();
   };
 
-  const handleListing = () => {
+  const handleListening = () => {
     setIsListening(true);
     loadVadDetector();
   };
@@ -51,7 +55,7 @@ function App() {
         <div
           className="microphone-icon-container"
           ref={microphoneRef}
-          onClick={handleListing}
+          onClick={handleListening}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -68,14 +72,14 @@ function App() {
           </svg>
         </div>
         <div className="microphone-status">
-          {isListening ? "Listening........." : "Not Listening...."}
+          {isSpeking ? "Speaking........." : "Not Speaking...."}
         </div>
         {isListening ? (
           <button className="microphone-stop btn" onClick={stopHandle}>
             Stop Listening
           </button>
         ) : (
-          <button className="microphone-stop btn" onClick={handleListing}>
+          <button className="microphone-stop btn" onClick={handleListening}>
             Start Listening
           </button>
         )}
